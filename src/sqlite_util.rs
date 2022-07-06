@@ -1,17 +1,12 @@
-use rusqlite::{Connection, Result};
-
-pub fn create_db() -> Result<Connection> {
-    const SQL_DROP_USER: &str = "DROP TABLE USER";
-
-    const SQL_CREATE_USER: &str =
-        "CREATE TABLE USER( ID INTEGER PRIMARY KEY,NAME TEXT NOT NULL,PWD TEXT NOT NULL)";
-    let database_file = String::from("pwd.db");
-
-    let conn = Connection::open(database_file)?;
-
-    let _ = conn.execute(SQL_DROP_USER, []);
-
-    conn.execute(SQL_CREATE_USER, [])?;
-
-    Ok(conn)
+pub fn create_db() {
+    let connection = sqlite3::open("pwd.db").unwrap();
+    connection
+        .execute(
+            "
+        CREATE TABLE users (name TEXT, age INTEGER);
+        INSERT INTO users (name, age) VALUES ('Alice', 42);
+        INSERT INTO users (name, age) VALUES ('Bob', 69);
+        ",
+        )
+        .unwrap();
 }
