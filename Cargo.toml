@@ -7,4 +7,6 @@ edition = "2021"
 
 [dependencies]
 sqlite3 = "0.24.0"
-term = "*"
+cli-table = "0.4"
+dirs = "4.0"
+chrono = "0.4"

@@ -1,6 +1,7 @@
-mod screen;
-mod sqlite_util;
+mod lib;
+use crate::lib::create_db;
+use crate::lib::init;
 fn main() {
-    screen::show();
-    sqlite_util::create_db();
+    create_db();
+    init();
 }
