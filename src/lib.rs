@@ -202,7 +202,7 @@ fn check_dir() -> PathBuf {
 }
 
 //初始化管理员密码
-pub fn input_root_password() -> String {
+fn input_root_password() -> String {
     let mut password1 = String::new();
     let mut password2 = String::new();
     loop {
@@ -254,7 +254,7 @@ fn query_root_password() {
         let root_password = input_root_password();
         statement = connection.prepare(UPDATE_ROOT_USER_ROOT_SQL).unwrap();
         statement
-            .bind(1, encrypt_str(root_password.trim(),"tong").as_str())
+            .bind(1, encrypt_str(root_password.trim(), "tong").as_str())
             .unwrap();
         statement.next().unwrap();
     }
@@ -267,13 +267,15 @@ fn check_root_password() {
     io::stdin().read_line(&mut pwd).unwrap();
     let connection = sqlite3::open(DB_PATH.as_path()).unwrap();
     let mut statement = connection.prepare(QUERY_ROOT_USER_ROOT_SQL).unwrap();
-    statement.bind(1, encrypt_str(pwd.trim(), "tong").as_str()).unwrap();
+    statement
+        .bind(1, encrypt_str(pwd.trim(), "tong").as_str())
+        .unwrap();
     let mut flag: bool = false;
 
     while let State::Row = statement.next().unwrap() {
         if pwd
             .trim()
-            .eq(decrypt_str(&statement.read::<String>(0).unwrap(),"tong").as_str())
+            .eq(decrypt_str(&statement.read::<String>(0).unwrap(), "tong").as_str())
         {
             flag = true;
             break;
@@ -309,7 +311,7 @@ fn query_password_list() -> Option<Vec<PassWord>> {
 }
 
 //展示用户密码列表
-pub fn show_password_list() -> Option<i8> {
+fn show_password_list() -> Option<i8> {
     let password_list = query_password_list().unwrap();
     print_stdout(password_list.with_title()).unwrap();
     back(show_password_list);
@@ -321,10 +323,10 @@ fn format_table_data(content: Result<String, sqlite3::Error>, is_decrypt: bool) 
     match content {
         Ok(ok) => {
             if is_decrypt {
-                return decrypt_str(&ok,"");
+                return decrypt_str(&ok, "");
             } else if ok.trim().is_empty() {
                 return String::from("-");
-            }else{
+            } else {
                 return ok;
             }
         }
@@ -333,7 +335,7 @@ fn format_table_data(content: Result<String, sqlite3::Error>, is_decrypt: bool) 
 }
 
 //添加用户密码
-pub fn insert_password() -> Option<i8> {
+fn insert_password() -> Option<i8> {
     let mut input_password: PassWord = PassWord {
         id: 0,
         title: String::new(),
@@ -369,10 +371,10 @@ fn insert_password_to_db(input_password: PassWord) {
     let mut statement = connection.prepare(INSERT_PASSWORD_SQL).unwrap();
     statement.bind::<&str>(1, &input_password.title).unwrap();
     statement
-        .bind::<&str>(2, encrypt_str(&input_password.account,"").as_str())
+        .bind::<&str>(2, encrypt_str(&input_password.account, "").as_str())
         .unwrap();
     statement
-        .bind::<&str>(3, encrypt_str(&input_password.password,"").as_str())
+        .bind::<&str>(3, encrypt_str(&input_password.password, "").as_str())
         .unwrap();
     statement
         .bind::<&str>(4, &input_password.acct_type)
@@ -411,7 +413,7 @@ fn delete_password_by_id() -> Option<i8> {
 }
 
 //更新用户密码
-pub fn update_password() -> Option<i8> {
+fn update_password() -> Option<i8> {
     let password_list = query_password_list().unwrap();
     print_stdout(password_list.with_title()).unwrap();
     println!("请输入需要更新的密码编号,退出请输入-1:");
@@ -493,10 +495,10 @@ pub fn update_password() -> Option<i8> {
             let param = pre_list.get(0).unwrap();
             statement.bind::<&str>(1, &param.title).unwrap();
             statement
-                .bind::<&str>(2, &decrypt_str(&param.account,""))
+                .bind::<&str>(2, &decrypt_str(&param.account, ""))
                 .unwrap();
             statement
-                .bind::<&str>(3, &decrypt_str(&param.password,""))
+                .bind::<&str>(3, &decrypt_str(&param.password, ""))
                 .unwrap();
             statement.bind::<&str>(4, &param.acct_type).unwrap();
             statement.bind::<&str>(5, &param.bz).unwrap();
@@ -517,7 +519,7 @@ pub fn update_password() -> Option<i8> {
 }
 
 //处理所有功能的返回操作
-pub fn back<T>(content: fn() -> Option<T>) {
+fn back<T>(content: fn() -> Option<T>) {
     println!("输入1继续操作,输入其他返回主菜单！！！");
     let mut flag = String::new();
     io::stdin().read_line(&mut flag).unwrap();
