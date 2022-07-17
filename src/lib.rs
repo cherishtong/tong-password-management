@@ -495,10 +495,10 @@ fn update_password() -> Option<i8> {
             let param = pre_list.get(0).unwrap();
             statement.bind::<&str>(1, &param.title).unwrap();
             statement
-                .bind::<&str>(2, &decrypt_str(&param.account, ""))
+                .bind::<&str>(2, &encrypt_str(&param.account, ""))
                 .unwrap();
             statement
-                .bind::<&str>(3, &decrypt_str(&param.password, ""))
+                .bind::<&str>(3, &encrypt_str(&param.password, ""))
                 .unwrap();
             statement.bind::<&str>(4, &param.acct_type).unwrap();
             statement.bind::<&str>(5, &param.bz).unwrap();
