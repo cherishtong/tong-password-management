@@ -1,0 +1,170 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号 (例如: v2.0.1)'
+        required: true
+        default: 'v2.0.0'
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  # 创建 Release
+  create-release:
+    runs-on: ubuntu-latest
+    outputs:
+      upload_url: ${{ steps.create_release.outputs.upload_url }}
+      release_id: ${{ steps.create_release.outputs.id }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get version
+        id: get_version
+        run: |
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            echo "VERSION=${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          else
+            echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+          fi
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ env.VERSION }}
+          release_name: 记多宝 ${{ env.VERSION }}
+          body: |
+            ## 记多宝 (Jidobao) ${{ env.VERSION }}
+            
+            安全的本地密码管理工具
+            
+            ### 下载
+            
+            | 平台 | 文件 |
+            |------|------|
+            | Windows | `jidobao-windows-x64.exe` |
+            | Linux | `jidobao-linux-x64` |
+            | macOS | `jidobao-macos-x64` |
+            
+            ### 使用
+            
+            ```bash
+            # Windows
+            ./jidobao-windows-x64.exe
+            
+            # Linux / macOS
+            chmod +x jidobao-*
+            ./jidobao-linux-x64
+            ```
+            
+            ### 功能特点
+            - 🎨 酷炫 TUI 界面
+            - 🔐 AES-256-GCM 加密
+            - 📋 剪贴板支持
+            - 🔍 密码搜索
+            - 📤 CSV 导出
+          draft: false
+          prerelease: false
+
+  # 编译 Windows 版本
+  build-windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          cd target/release
+          ren jidobao.exe jidobao-windows-x64.exe
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: target/release/jidobao-windows-x64.exe
+          asset_name: jidobao-windows-x64.exe
+          asset_content_type: application/octet-stream
+
+  # 编译 Linux 版本
+  build-linux:
+    needs: create-release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsqlite3-dev
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          cd target/release
+          mv jidobao jidobao-linux-x64
+          chmod +x jidobao-linux-x64
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: target/release/jidobao-linux-x64
+          asset_name: jidobao-linux-x64
+          asset_content_type: application/octet-stream
+
+  # 编译 macOS 版本
+  build-macos:
+    needs: create-release
+    runs-on: macos-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Package
+        run: |
+          cd target/release
+          mv jidobao jidobao-macos-x64
+          chmod +x jidobao-macos-x64
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ needs.create-release.outputs.upload_url }}
+          asset_path: target/release/jidobao-macos-x64
+          asset_name: jidobao-macos-x64
+          asset_content_type: application/octet-stream
