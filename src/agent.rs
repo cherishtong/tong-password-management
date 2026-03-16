@@ -161,24 +161,23 @@ fn handle_get(api_key: &str, title: &str) -> Result<()> {
         }
     };
 
-    let result: Result<PasswordRow, _> = conn
-        .query_row(
-            "SELECT id, title, account, password, acct_type, bz, cre_time, ud_time 
+    let result: Result<PasswordRow, _> = conn.query_row(
+        "SELECT id, title, account, password, acct_type, bz, cre_time, ud_time 
          FROM password WHERE title = ?1",
-            params![title],
-            |row| {
-                Ok((
-                    row.get(0)?,
-                    row.get(1)?,
-                    row.get(2)?,
-                    row.get(3)?,
-                    row.get(4)?,
-                    row.get(5)?,
-                    row.get(6)?,
-                    row.get(7)?,
-                ))
-            },
-        );
+        params![title],
+        |row| {
+            Ok((
+                row.get(0)?,
+                row.get(1)?,
+                row.get(2)?,
+                row.get(3)?,
+                row.get(4)?,
+                row.get(5)?,
+                row.get(6)?,
+                row.get(7)?,
+            ))
+        },
+    );
 
     match result {
         Ok((id, title, enc_account, enc_password, acct_type, bz, cre_time, ud_time)) => {
