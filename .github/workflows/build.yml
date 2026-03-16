@@ -80,20 +80,19 @@ jobs:
       - name: Build
         run: cargo build --release --target ${{ matrix.target }}
 
-      - name: Debug - List files
-        shell: bash
-        run: |
-          echo "=== Current directory ==="
-          pwd
-          echo "=== target directory ==="
-          ls -la target/ || true
-          echo "=== target/${{ matrix.target }}/release ==="
-          ls -la target/${{ matrix.target }}/release/ || true
-
       - name: Package
         shell: bash
         run: |
-          cd target/${{ matrix.target }}/release
+          # 确定构建输出目录（host == target 时用 target/release，否则用 target/<target>/release）
+          if [ -d "target/${{ matrix.target }}/release" ]; then
+            BUILD_DIR="target/${{ matrix.target }}/release"
+          else
+            BUILD_DIR="target/release"
+          fi
+          echo "Build directory: $BUILD_DIR"
+          ls -la "$BUILD_DIR/"
+          
+          cd "$BUILD_DIR"
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
             mv jidobao${{ matrix.suffix }} jidobao-${{ matrix.name }}${{ matrix.suffix }}
           else
@@ -105,7 +104,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: jidobao-${{ matrix.name }}
-          path: target/${{ matrix.target }}/release/jidobao-${{ matrix.name }}${{ matrix.suffix }}
+          path: target/**/release/jidobao-${{ matrix.name }}${{ matrix.suffix }}
 
   # 发布到 Release
   release:
