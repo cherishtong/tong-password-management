@@ -94,17 +94,17 @@ jobs:
           
           cd "$BUILD_DIR"
           if [ "${{ matrix.os }}" == "windows-latest" ]; then
-            mv jidobao${{ matrix.suffix }} jidobao-${{ matrix.name }}${{ matrix.suffix }}
+            mv jiduobao${{ matrix.suffix }} jiduobao-${{ matrix.name }}${{ matrix.suffix }}
           else
-            mv jidobao${{ matrix.suffix }} jidobao-${{ matrix.name }}${{ matrix.suffix }}
-            chmod +x jidobao-${{ matrix.name }}${{ matrix.suffix }}
+            mv jiduobao${{ matrix.suffix }} jiduobao-${{ matrix.name }}${{ matrix.suffix }}
+            chmod +x jiduobao-${{ matrix.name }}${{ matrix.suffix }}
           fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: jidobao-${{ matrix.name }}
-          path: target/**/release/jidobao-${{ matrix.name }}${{ matrix.suffix }}
+          name: jiduobao-${{ matrix.name }}
+          path: target/**/release/jiduobao-${{ matrix.name }}${{ matrix.suffix }}
 
   # 发布到 Release
   release:
@@ -135,22 +135,22 @@ jobs:
             
             | 平台 | 架构 | 文件 |
             |------|------|------|
-            | Windows | x64 | `jidobao-windows-x64.exe` |
-            | Linux | x64 | `jidobao-linux-x64` |
-            | macOS | x64 | `jidobao-macos-x64` |
-            | macOS | ARM64 | `jidobao-macos-arm64` |
+            | Windows | x64 | `jiduobao-windows-x64.exe` |
+            | Linux | x64 | `jiduobao-linux-x64` |
+            | macOS | x64 | `jiduobao-macos-x64` |
+            | macOS | ARM64 | `jiduobao-macos-arm64` |
             
             ### 使用说明
             
             **Windows:**
             ```powershell
-            jidobao-windows-x64.exe
+            jiduobao-windows-x64.exe
             ```
             
             **Linux / macOS:**
             ```bash
-            chmod +x jidobao-*
-            ./jidobao-linux-x64
+            chmod +x jiduobao-*
+            ./jiduobao-linux-x64
             ```
             
             ### 功能特点
