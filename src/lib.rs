@@ -16,13 +16,17 @@ use rusqlite::{params, Connection};
 // TUI 模块
 pub mod ui;
 
+// Agent API 模块
+pub mod agent;
+pub mod api_key;
+
 // =============================================================================
 // 常量定义
 // =============================================================================
 
 const DB_FILE_NAME: &str = "pwd.db";
 pub const APP_NAME: &str = "记多宝";
-pub const APP_VERSION: &str = "2.0.0";
+pub const APP_VERSION: &str = "2.0.1";
 
 // SQL 语句
 const CREATE_ROOT_USER_SQL: &str = r#"
@@ -732,7 +736,10 @@ pub fn copy_to_clipboard(text: &str) -> Result<()> {
 
 /// 运行 TUI 主循环
 pub fn run_tui() -> Result<()> {
-    use ui::{init_terminal, restore_terminal, App, AppMode, ConfirmAction, NextAction};
+    use ui::{
+        init_terminal, restore_terminal, run_api_key_manager, App, AppMode, ConfirmAction,
+        NextAction,
+    };
 
     // 初始化终端
     let mut terminal = init_terminal()?;
@@ -758,6 +765,17 @@ pub fn run_tui() -> Result<()> {
 
             if should_quit {
                 break;
+            }
+
+            // 处理 API 密钥管理（特殊处理，不需要重新初始化终端）
+            if matches!(app.next_action, NextAction::ManageApiKeys) {
+                // 恢复终端
+                let _ = restore_terminal();
+                // 运行 API 密钥管理界面
+                run_api_key_manager()?;
+                // 重新初始化终端
+                terminal = init_terminal()?;
+                continue;
             }
 
             // 执行后续操作
@@ -797,6 +815,9 @@ fn handle_post_tui_action(app: &ui::App) -> Result<()> {
         }
         NextAction::GeneratePassword => {
             generate_password_dialog()?;
+        }
+        NextAction::ManageApiKeys => {
+            // 已在 run_tui 中处理
         }
         NextAction::None => {}
     }
@@ -865,12 +886,189 @@ pub enum Commands {
         #[arg(short, long, default_value = "jiduobao_export.csv")]
         output: String,
     },
+    /// Agent API 命令（用于程序化访问）
+    Agent {
+        #[command(subcommand)]
+        action: AgentCommands,
+    },
+}
+
+/// Agent 子命令
+#[derive(Subcommand)]
+pub enum AgentCommands {
+    /// 获取指定标题的密码
+    Get {
+        /// API 密钥
+        #[arg(short, long)]
+        key: String,
+        /// 密码标题
+        #[arg(short, long)]
+        title: String,
+    },
+    /// 搜索密码
+    Search {
+        /// API 密钥
+        #[arg(short, long)]
+        key: String,
+        /// 搜索关键词
+        #[arg(short, long)]
+        keyword: String,
+    },
+    /// 列出所有密码（仅返回摘要）
+    List {
+        /// API 密钥
+        #[arg(short, long)]
+        key: String,
+    },
+    /// 添加新密码（需要写权限）
+    Add {
+        /// API 密钥
+        #[arg(short, long)]
+        key: String,
+        /// 标题
+        #[arg(short, long)]
+        title: String,
+        /// 账号
+        #[arg(short, long)]
+        account: String,
+        /// 密码
+        #[arg(short, long)]
+        password: String,
+        /// 分类
+        #[arg(short, long)]
+        category: Option<String>,
+        /// 备注
+        #[arg(short, long)]
+        note: Option<String>,
+    },
+    /// 密钥管理
+    Key {
+        #[command(subcommand)]
+        action: AgentKeyCommands,
+    },
+}
+
+/// Agent 密钥管理子命令
+#[derive(Subcommand)]
+pub enum AgentKeyCommands {
+    /// 生成新密钥
+    Generate {
+        /// 密钥名称
+        #[arg(short, long)]
+        name: String,
+        /// 过期时间（小时），不指定则永不过期
+        #[arg(short, long)]
+        expires: Option<i64>,
+        /// 权限: read 或 readwrite
+        #[arg(short, long, default_value = "read")]
+        permissions: String,
+        /// 允许访问的账号标题（可多次指定，如 --account github --account gmail）
+        #[arg(short, long)]
+        account: Vec<String>,
+    },
+    /// 列出所有密钥
+    List,
+    /// 撤销密钥（禁用）
+    Revoke {
+        /// 密钥 ID
+        #[arg(short, long)]
+        key_id: String,
+    },
+    /// 删除密钥
+    Delete {
+        /// 密钥 ID
+        #[arg(short, long)]
+        key_id: String,
+    },
 }
 
 /// 处理命令行命令
 pub fn handle_command(cli: &Cli) -> Result<bool> {
     match &cli.command {
         None => Ok(false), // 没有子命令，进入交互模式
+
+        // Agent 命令处理（不需要主密码验证，使用 API Key）
+        Some(Commands::Agent { action }) => {
+            // 初始化数据库（不需要主密码验证）
+            init_db()?;
+
+            // 初始化 API Key 表
+            api_key::ApiKeyManager::init_table()?;
+
+            use agent::{key_management, AgentCommand};
+
+            match action {
+                AgentCommands::Get { key, title } => {
+                    let cmd = AgentCommand::Get {
+                        api_key: key.clone(),
+                        title: title.clone(),
+                    };
+                    agent::handle_agent_command(&cmd)?;
+                }
+                AgentCommands::Search { key, keyword } => {
+                    let cmd = AgentCommand::Search {
+                        api_key: key.clone(),
+                        keyword: keyword.clone(),
+                    };
+                    agent::handle_agent_command(&cmd)?;
+                }
+                AgentCommands::List { key } => {
+                    let cmd = AgentCommand::List {
+                        api_key: key.clone(),
+                    };
+                    agent::handle_agent_command(&cmd)?;
+                }
+                AgentCommands::Add {
+                    key,
+                    title,
+                    account,
+                    password,
+                    category,
+                    note,
+                } => {
+                    let cmd = AgentCommand::Add {
+                        api_key: key.clone(),
+                        title: title.clone(),
+                        account: account.clone(),
+                        password: password.clone(),
+                        category: category.clone(),
+                        note: note.clone(),
+                    };
+                    agent::handle_agent_command(&cmd)?;
+                }
+                AgentCommands::Key { action } => match action {
+                    AgentKeyCommands::Generate {
+                        name,
+                        expires,
+                        permissions,
+                        account,
+                    } => {
+                        // 如果指定了账号列表，则转换为 Vec<String>
+                        let allowed_accounts = if account.is_empty() {
+                            None
+                        } else {
+                            Some(account.clone())
+                        };
+                        key_management::generate_key(
+                            name,
+                            *expires,
+                            permissions,
+                            allowed_accounts,
+                        )?;
+                    }
+                    AgentKeyCommands::List => {
+                        key_management::list_keys()?;
+                    }
+                    AgentKeyCommands::Revoke { key_id } => {
+                        key_management::revoke_key(key_id)?;
+                    }
+                    AgentKeyCommands::Delete { key_id } => {
+                        key_management::delete_key(key_id)?;
+                    }
+                },
+            }
+            Ok(true)
+        }
 
         Some(Commands::Add {
             title,
@@ -1053,6 +1251,9 @@ pub fn handle_command(cli: &Cli) -> Result<bool> {
 pub fn init() -> Result<()> {
     // 初始化数据库
     init_db()?;
+
+    // 初始化 API Key 表
+    api_key::ApiKeyManager::init_table()?;
 
     // 检查是否是首次运行
     if is_first_run()? {

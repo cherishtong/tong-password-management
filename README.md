@@ -26,6 +26,7 @@
 - **Argon2id**：现代密码哈希算法，抗 GPU/ASIC 破解
 - **随机盐值**：每个用户独立的加密盐值
 - **本地存储**：数据永不上传，仅保存在本地设备
+- **Agent API**：支持程序化访问，可限制访问范围，适用于 CI/CD 场景
 
 ### 🚀 交互功能
 
@@ -39,6 +40,7 @@
 | `e` | 编辑选中密码 |
 | `/` 或 `s` | 搜索密码 |
 | `g` | 生成随机密码 |
+| `k` | API 密钥管理 |
 | `x` | 导出密码到 CSV |
 | `q` | 退出程序 |
 
@@ -128,20 +130,45 @@ jiduobao
 ./jiduobao export --output backup.csv
 ```
 
+### Agent API（程序化访问）
+
+支持外部程序通过 CLI 调用访问密码，适用于 CI/CD 流水线：
+
+```bash
+# 生成 API 密钥（限制只能访问特定账号）
+./jiduobao agent key generate --name "CI-Deploy" --expires 24 --account "prod-server"
+
+# 获取密码（返回 JSON）
+./jiduobao agent get --key "jdb_xxx" --title "prod-server"
+# 输出: {"success":true,"data":{"title":"prod-server","account":"root","password":"secret123"}}
+
+# 搜索密码
+./jiduobao agent search --key "jdb_xxx" --keyword "github"
+
+# 列出所有密码
+./jiduobao agent list --key "jdb_xxx"
+```
+
+**详细文档**: 参见 [AGENT_API.md](./AGENT_API.md)
+
 ## 🏗️ 项目结构
 
 ```
 .
 ├── Cargo.toml
 ├── README.md
-├── AGENTS.md
+├── AGENT_API.md        # Agent API 使用文档
+├── AGENTS.md           # 开发指南
 └── src/
-    ├── main.rs           # 程序入口
-    ├── lib.rs            # 核心业务逻辑
-    └── ui/               # TUI 界面模块
-        ├── mod.rs        # 模块入口
-        ├── app.rs        # 应用状态和主循环
-        └── taiji.rs      # 标题和作者信息组件
+    ├── main.rs         # 程序入口
+    ├── lib.rs          # 核心业务逻辑
+    ├── agent.rs        # Agent CLI 命令处理
+    ├── api_key.rs      # API 密钥管理
+    └── ui/             # TUI 界面模块
+        ├── mod.rs
+        ├── app.rs      # 主应用界面
+        ├── api_key_manager.rs  # API 密钥管理界面
+        └── taiji.rs    # 标题和作者信息组件
 ```
 
 ## 🔧 技术栈
@@ -185,6 +212,16 @@ jiduobao
 4. 重新添加密码条目
 
 ## 📝 更新日志
+
+### v2.0.1 (2024-03-16)
+- 🤖 **Agent API**：支持外部程序程序化访问密码
+  - 生成 API 密钥，可设置过期时间和权限
+  - 支持限制密钥只能访问特定账号（最小权限原则）
+  - 提供 `get`/`search`/`list`/`add` 命令
+  - 所有操作返回 JSON 格式，便于脚本解析
+- 🎨 **TUI 密钥管理界面**：按 `k` 键进入，支持向导式生成密钥
+- 🔐 **安全性增强**：密钥哈希存储、时序安全比较、自动过期检查
+- 📚 **完整文档**：添加 AGENT_API.md 详细使用指南
 
 ### v2.0.0 (2024)
 - 🎨 全新 TUI 界面，ASCII 艺术字 Logo

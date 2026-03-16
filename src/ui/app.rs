@@ -52,6 +52,7 @@ pub enum NextAction {
     AddPassword,
     EditPassword(i64),
     GeneratePassword,
+    ManageApiKeys,
 }
 
 /// 应用状态
@@ -325,7 +326,7 @@ impl App {
         let help_text = if matches!(self.mode, AppMode::Searching) {
             "Enter:确认  Esc:取消"
         } else {
-            "↑↓:选择  Enter:复制密码  u:显示/隐藏账号  a:添加  d:删除  e:编辑  /:搜索  g:生成密码  x:导出  q:退出"
+            "↑↓:选择  Enter:复制密码  u:显示/隐藏  a:添加  d:删除  e:编辑  /:搜索  g:生成  k:密钥管理  x:导出  q:退出"
         };
 
         let help = Paragraph::new(Span::styled(help_text, Style::default().fg(Color::Gray)))
@@ -464,6 +465,11 @@ impl App {
             KeyCode::Char('x') | KeyCode::Char('X') => {
                 // 导出
                 self.mode = AppMode::Confirming("确定要导出所有密码吗？", ConfirmAction::Export);
+            }
+            KeyCode::Char('k') | KeyCode::Char('K') => {
+                // API 密钥管理
+                self.next_action = NextAction::ManageApiKeys;
+                self.running = false;
             }
             KeyCode::Char('/') | KeyCode::Char('s') | KeyCode::Char('S') => {
                 // 搜索
