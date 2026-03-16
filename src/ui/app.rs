@@ -245,8 +245,8 @@ impl App {
             Constraint::Percentage(22),
             Constraint::Percentage(10),
             Constraint::Percentage(15),
-            Constraint::Length(19),
-            Constraint::Length(19),
+            Constraint::Length(22),
+            Constraint::Length(22),
         ];
 
         let table = Table::new(rows, widths)
