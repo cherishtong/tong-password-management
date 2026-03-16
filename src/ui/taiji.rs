@@ -66,7 +66,7 @@ impl<'a> AuthorInfo<'a> {
 
 impl<'a> Widget for AuthorInfo<'a> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        let info = vec![
+        let info = [
             format!("版本: {}", self.version),
             "作者: 赵无为".to_string(),
             "邮箱: cherishtong@aliyun.com".to_string(),

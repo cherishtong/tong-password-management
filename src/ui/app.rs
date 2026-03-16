@@ -16,8 +16,8 @@ use ratatui::{
     style::{Color, Modifier, Style},
     text::{Line, Span, Text},
     widgets::{
-        Block, Borders, Clear, Paragraph, Row, Scrollbar, ScrollbarOrientation,
-        ScrollbarState, Table, TableState,
+        Block, Borders, Clear, Paragraph, Row, Scrollbar, ScrollbarOrientation, ScrollbarState,
+        Table, TableState,
     },
     Frame, Terminal,
 };
@@ -82,7 +82,7 @@ impl App {
         if !passwords.is_empty() {
             table_state.select(Some(0));
         }
-        
+
         let scroll_state = ScrollbarState::new(passwords.len().saturating_sub(1));
 
         Self {
@@ -127,9 +127,9 @@ impl App {
         let main_layout = Layout::default()
             .direction(Direction::Vertical)
             .constraints([
-                Constraint::Length(10),  // 大标题区域
-                Constraint::Min(10),     // 主内容区
-                Constraint::Length(3),   // 状态栏
+                Constraint::Length(10), // 大标题区域
+                Constraint::Min(10),    // 主内容区
+                Constraint::Length(3),  // 状态栏
             ])
             .split(frame.size());
 
@@ -159,8 +159,8 @@ impl App {
         let header_layout = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([
-                Constraint::Min(40),      // 左侧：大标题
-                Constraint::Length(28),   // 右侧：作者信息
+                Constraint::Min(40),    // 左侧：大标题
+                Constraint::Length(28), // 右侧：作者信息
             ])
             .split(area);
 
@@ -190,9 +190,21 @@ impl App {
         };
 
         // 表格标题行
-        let header = Row::new(vec!["序号", "标题", "账号", "分类", "备注", "创建时间", "更新时间"])
-            .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
-            .height(1);
+        let header = Row::new(vec![
+            "序号",
+            "标题",
+            "账号",
+            "分类",
+            "备注",
+            "创建时间",
+            "更新时间",
+        ])
+        .style(
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        )
+        .height(1);
 
         // 表格数据行
         let rows: Vec<Row> = display_passwords
@@ -224,7 +236,7 @@ impl App {
                         Err(_) => "[解密失败]".to_string(),
                     }
                 };
-                
+
                 Row::new(vec![
                     p.id.to_string(),
                     p.title.trim().to_string(),
@@ -256,7 +268,11 @@ impl App {
                     .title(if self.search_query.is_empty() {
                         format!("密码列表 (共 {} 条)", display_passwords.len())
                     } else {
-                        format!("搜索结果: '{}' ({} 条)", self.search_query, display_passwords.len())
+                        format!(
+                            "搜索结果: '{}' ({} 条)",
+                            self.search_query,
+                            display_passwords.len()
+                        )
                     })
                     .borders(Borders::ALL)
                     .border_style(Style::default().fg(Color::Blue)),
@@ -277,7 +293,7 @@ impl App {
                 .orientation(ScrollbarOrientation::VerticalRight)
                 .begin_symbol(Some("↑"))
                 .end_symbol(Some("↓"));
-            
+
             frame.render_stateful_widget(
                 scrollbar,
                 area.inner(&Margin {
@@ -344,9 +360,17 @@ impl App {
             Line::from(Span::styled(message, Style::default().fg(Color::Yellow))),
             Line::from(""),
             Line::from(vec![
-                Span::styled("y", Style::default().fg(Color::Green).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "y",
+                    Style::default()
+                        .fg(Color::Green)
+                        .add_modifier(Modifier::BOLD),
+                ),
                 Span::raw(": 确认  "),
-                Span::styled("n", Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)),
+                Span::styled(
+                    "n",
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+                ),
                 Span::raw("/Esc: 取消"),
             ]),
         ]);
@@ -452,16 +476,17 @@ impl App {
                     if let Some(pwd) = self.passwords.get(idx) {
                         // 解密密码并复制到剪贴板
                         match crate::decrypt_str(&pwd.password) {
-                            Ok(decrypted) => {
-                                match crate::copy_to_clipboard(&decrypted) {
-                                    Ok(_) => {
-                                        self.set_status(format!("✅ 已复制 '{}' 的密码到剪贴板", pwd.title.trim()));
-                                    }
-                                    Err(e) => {
-                                        self.set_status(format!("❌ 复制失败: {}", e));
-                                    }
+                            Ok(decrypted) => match crate::copy_to_clipboard(&decrypted) {
+                                Ok(_) => {
+                                    self.set_status(format!(
+                                        "✅ 已复制 '{}' 的密码到剪贴板",
+                                        pwd.title.trim()
+                                    ));
                                 }
-                            }
+                                Err(e) => {
+                                    self.set_status(format!("❌ 复制失败: {}", e));
+                                }
+                            },
                             Err(e) => {
                                 self.set_status(format!("❌ 解密失败: {}", e));
                             }
@@ -563,7 +588,7 @@ fn centered_rect(percent_x: u16, percent_y: u16, r: Rect) -> Rect {
 fn mask_string(s: &str, max_len: usize) -> String {
     let s = s.trim();
     let chars: Vec<char> = s.chars().collect();
-    
+
     if chars.len() <= 4 {
         "****".to_string()
     } else {
