@@ -190,7 +190,7 @@ impl App {
         };
 
         // 表格标题行
-        let header = Row::new(vec!["序号", "标题", "账号", "分类", "更新时间"])
+        let header = Row::new(vec!["序号", "标题", "账号", "分类", "备注", "创建时间", "更新时间"])
             .style(Style::default().fg(Color::Yellow).add_modifier(Modifier::BOLD))
             .height(1);
 
@@ -230,6 +230,8 @@ impl App {
                     p.title.trim().to_string(),
                     account_display,
                     p.acct_type.trim().to_string(),
+                    p.bz.trim().to_string(),
+                    p.cre_time.clone(),
                     p.ud_time.clone(),
                 ])
                 .height(1)
@@ -239,9 +241,11 @@ impl App {
         // 列宽配置
         let widths = [
             Constraint::Length(6),
-            Constraint::Percentage(30),
-            Constraint::Percentage(30),
+            Constraint::Percentage(22),
+            Constraint::Percentage(22),
+            Constraint::Percentage(10),
             Constraint::Percentage(15),
+            Constraint::Length(19),
             Constraint::Length(19),
         ];
 
