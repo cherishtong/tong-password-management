@@ -46,37 +46,37 @@
 
 ### 从 Release 下载（推荐）
 
-访问 [GitHub Releases](https://github.com/yourusername/jidobao/releases) 页面，下载对应平台的可执行文件：
+访问 [GitHub Releases](https://github.com/yourusername/jiduobao/releases) 页面，下载对应平台的可执行文件：
 
 | 平台 | 文件 | 说明 |
 |------|------|------|
-| Windows | `jidobao-windows-x64.exe` | 直接运行 |
-| Linux | `jidobao-linux-x64` | 需要 `chmod +x` |
-| macOS (Intel) | `jidobao-macos-x64` | 需要 `chmod +x` |
-| macOS (Apple Silicon) | `jidobao-macos-arm64` | 需要 `chmod +x` |
+| Windows | `jiduobao-windows-x64.exe` | 直接运行 |
+| Linux | `jiduobao-linux-x64` | 需要 `chmod +x` |
+| macOS (Intel) | `jiduobao-macos-x64` | 需要 `chmod +x` |
+| macOS (Apple Silicon) | `jiduobao-macos-arm64` | 需要 `chmod +x` |
 
 ### 从源码构建
 
 ```bash
 # 克隆仓库
 git clone <repository-url>
-cd jidobao
+cd jiduobao
 
 # 构建发布版本
 cargo build --release
 
 # 可执行文件位置
-./target/release/jidobao
+./target/release/jiduobao
 ```
 
 ### Windows
 
 ```powershell
 # 直接运行
-.\target\release\jidobao.exe
+.\target\release\jiduobao.exe
 
 # 添加到 PATH 后可以使用
-jidobao
+jiduobao
 ```
 
 ## 🎮 使用方法
@@ -86,7 +86,7 @@ jidobao
 直接运行程序即可进入酷炫的 TUI 界面：
 
 ```bash
-./jidobao
+./jiduobao
 ```
 
 界面预览：
@@ -110,22 +110,22 @@ jidobao
 
 ```bash
 # 添加密码（交互式）
-./jidobao add
+./jiduobao add
 
 # 快速添加
-./jidobao add --title "GitHub" --account "user" --password "pass"
+./jiduobao add --title "GitHub" --account "user" --password "pass"
 
 # 列出所有密码
-./jidobao list
+./jiduobao list
 
 # 搜索密码
-./jidobao search --keyword "github"
+./jiduobao search --keyword "github"
 
 # 生成随机密码
-./jidobao generate --length 20
+./jiduobao generate --length 20
 
 # 导出密码
-./jidobao export --output backup.csv
+./jiduobao export --output backup.csv
 ```
 
 ## 🏗️ 项目结构
@@ -157,10 +157,10 @@ jidobao
 
 ## 📂 数据存储
 
-- **配置目录**: `{系统配置目录}/jidobao/`
-  - Windows: `%APPDATA%/jidobao/`
-  - macOS: `~/Library/Application Support/jidobao/`
-  - Linux: `~/.config/jidobao/`
+- **配置目录**: `{系统配置目录}/jiduobao/`
+  - Windows: `%APPDATA%/jiduobao/`
+  - macOS: `~/Library/Application Support/jiduobao/`
+  - Linux: `~/.config/jiduobao/`
 - **数据库文件**: `{配置目录}/pwd.db`
 
 ## 🔒 安全说明

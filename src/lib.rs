@@ -115,7 +115,7 @@ pub struct PassWord {
 /// 获取配置目录
 fn get_config_dir() -> Result<PathBuf> {
     let config_dir = dirs::config_dir().context("无法获取配置目录")?;
-    let app_dir = config_dir.join("jidobao");
+    let app_dir = config_dir.join("jiduobao");
     
     if !app_dir.exists() {
         fs::create_dir_all(&app_dir).context("创建应用目录失败")?;
@@ -671,7 +671,7 @@ pub fn export_passwords_dialog() -> Result<()> {
     
     let path: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("导出文件路径")
-        .default("jidobao_export.csv".to_string())
+        .default("jiduobao_export.csv".to_string())
         .interact_text()?;
     
     let passwords = query_all_passwords()?;
@@ -816,7 +816,7 @@ fn handle_post_tui_action(app: &ui::App) -> Result<()> {
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "jidobao")]
+#[command(name = "jiduobao")]
 #[command(about = "记多宝 - 安全的本地密码管理工具")]
 #[command(version = APP_VERSION)]
 pub struct Cli {
@@ -853,7 +853,7 @@ pub enum Commands {
     },
     /// 导出密码
     Export {
-        #[arg(short, long, default_value = "jidobao_export.csv")]
+        #[arg(short, long, default_value = "jiduobao_export.csv")]
         output: String,
     },
 }

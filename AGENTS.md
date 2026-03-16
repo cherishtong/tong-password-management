@@ -224,7 +224,7 @@ cargo build
 cargo build --release
 
 # Windows 图标打包
-cargo rustc --release --bin jidobao -- -C link-arg=resource.res
+cargo rustc --release --bin jiduobao -- -C link-arg=resource.res
 
 # 运行
 cargo run

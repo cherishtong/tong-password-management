@@ -1,5 +1,5 @@
 use clap::Parser;
-use jidobao::{handle_command, init, Cli};
+use jiduobao::{handle_command, init, Cli};
 
 fn main() {
     let cli = Cli::parse();
